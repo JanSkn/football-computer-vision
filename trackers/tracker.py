@@ -100,8 +100,8 @@ class Tracker:
 
         cv2.ellipse(frame, 
                     center=(x_center, y2), 
-                    axes=(int(width),           # length of major axis
-                          int(0.35*width)),     # length of minor axis
+                    axes=(width,           # length of major axis
+                          0.35*width),     # length of minor axis
                     angle=0,                    # rotation of the ellipse
                     startAngle=-45,             # start and end: upper part of ellipse not drawn
                     endAngle=235,    
