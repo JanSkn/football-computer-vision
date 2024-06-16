@@ -1,11 +1,8 @@
-from typing import List, Dict, Tuple
+from typing import List, Dict
 import numpy as np
 import ultralytics
 import supervision as sv
-import cv2
-# import sys
-# sys.path.append("../")
-from utils import get_center_of_bbox, get_bbox_dimensions
+from utils import ellipse, triangle
 
 class Tracker:
     """
@@ -91,71 +88,7 @@ class Tracker:
 
         return tracks
     
-    def ellipse(self, frame: np.ndarray, bbox: List[float], colour: Tuple[int, int, int], tracker_id: int=None):
-        # xyxy bboxes --> y2 at last index
-        y2 = int(bbox[3])   # ellipse should be below the player
-
-        x_center, _ = get_center_of_bbox(bbox)
-        width, _ = get_bbox_dimensions(bbox)
-
-        cv2.ellipse(frame, 
-                    center=(x_center, y2), 
-                    axes=(width,           # length of major axis
-                          0.35*width),     # length of minor axis
-                    angle=0,                    # rotation of the ellipse
-                    startAngle=-45,             # start and end: upper part of ellipse not drawn
-                    endAngle=235,    
-                    color=colour, 
-                    thickness=2)
-        
-        if tracker_id:
-            rect_width = 40
-            rect_height = 20
-            rect_x1 = x_center - rect_width // 2
-            rect_x2 = x_center + rect_width // 2
-            rect_y1 = y2 - rect_height // 2 + 15       # padding
-            rect_y2 = y2 + rect_height // 2 + 15       # padding
-
-            cv2.rectangle(frame, 
-                        pt1=(rect_x1, rect_y1),   # top left corner
-                        pt2=(rect_x2, rect_y2),   # bottom right corner
-                        color=colour,
-                        thickness=cv2.FILLED)
-
-            # size of the text for centering
-            text = str(tracker_id)
-            font_face = cv2.FONT_HERSHEY_SIMPLEX
-            font_scale = 0.6
-            thickness = 2
-
-            (text_width, text_height), _ = cv2.getTextSize(text, font_face, font_scale, thickness)
-            text_x = rect_x1 + (rect_width - text_width) // 2
-            text_y = rect_y1 + (rect_height + text_height) // 2
-
-            cv2.putText(frame, 
-                        text=text, 
-                        org=(text_x, text_y),  # bottom left corner of the text
-                        fontFace=font_face, 
-                        fontScale=font_scale, 
-                        color=(0, 0, 0), 
-                        thickness=thickness)
-
-        return frame
-    
-    def triangle(self, frame: np.ndarray, bbox: List[float], colour: Tuple[int, int, int]):
-        y = int(bbox[1])    # y1 --> top of the ball
-        x, _ = get_center_of_bbox(bbox)
-
-        triangle_points = np.array([
-            [x, y],                 # bottom corner
-            [x - 8, y - 15],       # top left corner
-            [x + 8, y - 15],       # top right corner
-        ])   
-
-        cv2.drawContours(frame, contours=[triangle_points], contourIdx=0, color=colour, thickness=cv2.FILLED)   
-        cv2.drawContours(frame, contours=[triangle_points], contourIdx=0, color=(0, 0, 0), thickness=2)   # border  
-
-        return frame        
+           
 
     def annotations(self, frames: List[np.ndarray], tracks: Dict[str, List[Dict]]) -> List[np.ndarray]:   # TODO extra folder for custom drawings and then import?
         output_frames = []  # frames after changing the annotations
@@ -168,13 +101,13 @@ class Tracker:
             ball_dict = tracks["ball"][frame_num]
 
             for tracker_id, player in player_dict.items():
-                frame = self.ellipse(frame, player["bbox"], (255, 255, 255), tracker_id)
+                frame = ellipse(frame, player["bbox"], (255, 255, 255), tracker_id)
 
             for _, referee in referee_dict.items():
-                frame = self.ellipse(frame, referee["bbox"], (0, 255, 255))
+                frame = ellipse(frame, referee["bbox"], (0, 255, 255))
 
             for tracker_id, ball in ball_dict.items():
-                frame = self.triangle(frame, ball["bbox"], (0, 255, 0))
+                frame = triangle(frame, ball["bbox"], (0, 255, 0))
                 
             output_frames.append(frame)
 
