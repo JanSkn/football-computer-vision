@@ -1,8 +1,18 @@
+import logging
 from typing import List, Dict
+import time
+from datetime import datetime
 import numpy as np
 import ultralytics
 import supervision as sv
 from utils import ellipse, triangle
+
+logging.basicConfig(level=logging.INFO, 
+                    format="%(asctime)s - %(levelname)s - %(message)s",
+                    handlers=[
+                        logging.FileHandler("model_logs/tracking.log"),
+                        logging.StreamHandler()
+                    ])
 
 class Tracker:
     """
@@ -11,10 +21,11 @@ class Tracker:
     Assigning bounding boxes unique IDs.
     Predicting and then tracking with supervision instead of YOLO tracking due to overwriting goalkeepers.
     """
-    def __init__(self, model_path: str) -> None: # TODO , classes: List[int] for selection in frontend, add classes=self.classes in predict
+    def __init__(self, model_path: str, verbose: bool=True) -> None: # TODO , classes: List[int] for selection in frontend, add classes=self.classes in predict
         self.model = ultralytics.YOLO(model_path)
         #self.classes = classes
         self.tracker = sv.ByteTrack()
+        self.verbose = verbose
 
     def detect_frames(self, frames: List[np.ndarray], batch_size: int=20) -> List[ultralytics.engine.results.Results]:
         """
@@ -23,13 +34,27 @@ class Tracker:
         batch_size=batch_size
         detections = []
 
+        
+        start_time = time.time()
+
+        if self.verbose:
+            logging.info(f"Starting object detection at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+
         for i in range(0, len(frames), batch_size):
-            detections_batch = self.model.predict(source=frames[i:i+batch_size], conf=0.1)
-            detections += detections_batch
+            frame_time = time.time()
             
+            detections_batch = self.model.predict(source=frames[i:i+batch_size], conf=0.1, verbose=self.verbose)
+            detections += detections_batch
+
+            if self.verbose:
+                logging.info(f"Processed frames {i} to {min(i+batch_size-1, len(frames))} in {time.time() - frame_time:.2f} seconds.")
+        
+        if self.verbose:
+            logging.info(f"Detected objects in {len(frames)} frames in {time.time() - start_time:.2f} seconds.")
+  
         return detections
 
-    def get_object_tracks(self, frames: List[np.ndarray]) -> Dict[str, List[Dict]]:
+    def get_object_tracks(self, frames: List[np.ndarray]) -> Dict[str, List[Dict]]:        
         detections = self.detect_frames(frames)
 
         # key: tracker_id, value: bbox, index: frame
@@ -38,6 +63,11 @@ class Tracker:
             "referees": [],     
             "ball": []
         }
+
+        start_time = time.time()
+
+        if self.verbose:
+            logging.info(f"Starting object tracking at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
         for frame_num, detection in enumerate(detections):
             cls_names = detection.names
@@ -86,9 +116,13 @@ class Tracker:
                 if class_id == cls_names_switched["ball"]:
                     tracks["ball"][frame_num][1] = {"bbox": bbox}   # ID 1 as there is only one ball
 
+        if self.verbose:
+            logging.info(f"Tracked objects in {len(frames)} frames in {time.time() - start_time:.2f} seconds.")
+
+            separator = f"{'-'*10} [End of session] at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} {'-'*10}"
+            logging.info(separator)
+
         return tracks
-    
-           
 
     def annotations(self, frames: List[np.ndarray], tracks: Dict[str, List[Dict]]) -> List[np.ndarray]:   # TODO extra folder for custom drawings and then import?
         output_frames = []  # frames after changing the annotations
@@ -101,7 +135,8 @@ class Tracker:
             ball_dict = tracks["ball"][frame_num]
 
             for tracker_id, player in player_dict.items():
-                frame = ellipse(frame, player["bbox"], (255, 255, 255), tracker_id)
+                colour = player.get("team_colour", (255, 255, 255))     # get team colour if it exists, else white
+                frame = ellipse(frame, player["bbox"], colour, tracker_id)
 
             for _, referee in referee_dict.items():
                 frame = ellipse(frame, referee["bbox"], (0, 255, 255))
