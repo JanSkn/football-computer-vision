@@ -72,7 +72,7 @@ st.sidebar.write("\n")
 
 st.sidebar.subheader("Video Upload")
 
-uploaded_video = st.sidebar.file_uploader("Select a video file.", type=["mp4", "mov", "avi", "mkv"])
+uploaded_video = st.sidebar.file_uploader("Select a video file.", type=["mp4"])
 
 if uploaded_video:
     st.sidebar.video(uploaded_video)

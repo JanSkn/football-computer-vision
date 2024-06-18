@@ -27,7 +27,7 @@ def read_video(input: Union[str, bytes]) -> List[np.ndarray]:
     return frames
 
 def save_video(frames: List[np.ndarray], path: str, fps: int=24) -> None:
-    fourcc = cv2.VideoWriter_fourcc(*"avc1")    # codec for compressing the video
+    fourcc = cv2.VideoWriter_fourcc(*"mp4v")    # codec for compressing the video
     out = cv2.VideoWriter(filename=path, fourcc=fourcc, fps=fps, frameSize=(frames[0].shape[1], frames[0].shape[0]))
     
     for frame in frames:
