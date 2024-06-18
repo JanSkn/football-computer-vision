@@ -13,9 +13,17 @@ st.sidebar.title("Settings")
 st.sidebar.header("Options")
 players = st.sidebar.toggle("Track Players", value=True)
 goalkeepers = st.sidebar.toggle("Track Goalkeepers", value=True)
+referees = st.sidebar.toggle("Track Referees", value=True)
 ball = st.sidebar.toggle("Track Ball", value=True)
 keypoints = st.sidebar.toggle("Show Keypoints", value=True)
 speed = st.sidebar.toggle("Show Players' Speed", value=True)
+
+# select classes to track
+
+# data.yaml class IDs
+# ball: 0, goalkeeper: 1, player: 2, referee: 3
+options = {0: ball, 1: goalkeepers, 2: players, 3: referees}
+classes = [key for key, value in options.items() if value is True]
 
 st.sidebar.markdown("***")
 
@@ -52,7 +60,7 @@ if demo:
 
     if start_analysis:
         with st.spinner("Processing ..."):
-            process_video(demo_video_bytes)
+            process_video(demo_video_bytes, classes)
             processed = True
         placeholder = st.empty()
         with placeholder.container():
@@ -73,7 +81,7 @@ if uploaded_video:
 
     if start_analysis:
         with st.spinner("Processing ..."):
-            process_video(uploaded_video.read()) 
+            process_video(uploaded_video.read(), classes) 
             processed = True
         placeholder = st.empty()
         with placeholder.container():

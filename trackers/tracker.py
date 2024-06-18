@@ -21,9 +21,9 @@ class Tracker:
     Assigning bounding boxes unique IDs.
     Predicting and then tracking with supervision instead of YOLO tracking due to overwriting goalkeepers.
     """
-    def __init__(self, model_path: str, verbose: bool=True) -> None: # TODO , classes: List[int] for selection in frontend, add classes=self.classes in predict
+    def __init__(self, model_path: str, classes: List[int], verbose: bool=True) -> None: 
         self.model = ultralytics.YOLO(model_path)
-        #self.classes = classes
+        self.classes = classes
         self.tracker = sv.ByteTrack()
         self.verbose = verbose
 
@@ -43,7 +43,7 @@ class Tracker:
         for i in range(0, len(frames), batch_size):
             frame_time = time.time()
             
-            detections_batch = self.model.predict(source=frames[i:i+batch_size], conf=0.1, verbose=self.verbose)
+            detections_batch = self.model.predict(source=frames[i:i+batch_size], conf=0.1, classes=self.classes, verbose=self.verbose)
             detections += detections_batch
 
             if self.verbose:
