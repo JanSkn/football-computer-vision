@@ -1,1 +1,1 @@
-libgl1  # for streamlit hosting
+libgl1
