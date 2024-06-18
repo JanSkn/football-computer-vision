@@ -6,6 +6,7 @@ import numpy as np
 import ultralytics
 import supervision as sv
 from utils import ellipse, triangle
+from utils import get_device
 
 logging.basicConfig(level=logging.INFO, 
                     format="%(asctime)s - %(levelname)s - %(message)s",
@@ -38,12 +39,12 @@ class Tracker:
         start_time = time.time()
 
         if self.verbose:
-            logging.info(f"Starting object detection at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            logging.info(f"[Device: {get_device()}] Starting object detection at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
         for i in range(0, len(frames), batch_size):
             frame_time = time.time()
             
-            detections_batch = self.model.predict(source=frames[i:i+batch_size], conf=0.1, classes=self.classes, verbose=self.verbose)
+            detections_batch = self.model.predict(source=frames[i:i+batch_size], conf=0.1, classes=self.classes, verbose=self.verbose, device=get_device())
             detections += detections_batch
 
             if self.verbose:
@@ -67,7 +68,7 @@ class Tracker:
         start_time = time.time()
 
         if self.verbose:
-            logging.info(f"Starting object tracking at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            logging.info(f"[Device: {get_device()}] Starting object tracking at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
         for frame_num, detection in enumerate(detections):
             cls_names = detection.names
