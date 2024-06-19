@@ -42,7 +42,7 @@ class TeamAssigner:
             player_colours.append(player_colour)
 
         # of all slightly different colours, determine the 2 "mean" colours as team colours
-        kmeans = KMeans(n_clusters=2, init="k-means++", random_state=0).fit(player_colours)
+        kmeans = KMeans(n_clusters=2, init="k-means++", random_state=0, n_init=10).fit(player_colours)
 
         self.kmeans = kmeans
 

@@ -3,10 +3,10 @@ from typing import List, Dict
 import time
 from datetime import datetime
 import numpy as np
+import pandas as pd
 import ultralytics
 import supervision as sv
-from utils import ellipse, triangle
-from utils import get_device
+from utils import ellipse, triangle, ball_possession_box, get_device
 
 logging.basicConfig(level=logging.INFO, 
                     format="%(asctime)s - %(levelname)s - %(message)s",
@@ -27,6 +27,23 @@ class Tracker:
         self.classes = classes
         self.tracker = sv.ByteTrack()
         self.verbose = verbose
+
+    def interpolate_ball_positions(self, ball_tracks: List[Dict]) -> List[Dict]:
+        """
+        If the ball is not detected in every frame, take the frames where it is detected and interpolate
+        ball position in the frames between by drawing a line and simulate the position evenly along the line.
+        """
+        # tracker_id 1 for ball, {} if nothing found, at tracker_id 1, get bbox, [] if nothing found
+        # {1: {"bbox": [....]}, ...
+        ball_positions = [track.get(1, {}).get("bbox", []) for track in ball_tracks]
+        df_ball_positions = pd.DataFrame(ball_positions, columns=["x1", "y1", "x2", "y2"])
+
+        df_ball_positions = df_ball_positions.interpolate() # interpolate NaN values, estimation based on previous data
+        df_ball_positions = df_ball_positions.bfill()       # --> edge case beginning: no previous data --> bfill (replace NaN with next following value)
+
+        ball_positions = [{1: {"bbox": x}} for x in df_ball_positions.to_numpy().tolist()] # transform back
+
+        return ball_positions
 
     def detect_frames(self, frames: List[np.ndarray], batch_size: int=20) -> List[ultralytics.engine.results.Results]:
         """
@@ -125,7 +142,7 @@ class Tracker:
 
         return tracks
 
-    def annotations(self, frames: List[np.ndarray], tracks: Dict[str, List[Dict]]) -> List[np.ndarray]:   # TODO extra folder for custom drawings and then import?
+    def annotations(self, frames: List[np.ndarray], tracks: Dict[str, List[Dict]], ball_possession: np.ndarray) -> List[np.ndarray]:   # TODO extra folder for custom drawings and then import?
         output_frames = []  # frames after changing the annotations
         
         for frame_num, frame in enumerate(frames):
@@ -136,15 +153,20 @@ class Tracker:
             ball_dict = tracks["ball"][frame_num]
 
             for tracker_id, player in player_dict.items():
-                colour = player.get("team_colour", (255, 255, 255))     # get team colour if it exists, else white
+                colour = player.get("team_colour", (255, 255, 255))         # get team colour if it exists, else white
                 frame = ellipse(frame, player["bbox"], colour, tracker_id)
 
+                if player.get("has_ball", False):
+                    frame = triangle(frame, player["bbox"], (0, 0, 255))    # red triangle
+
             for _, referee in referee_dict.items():
-                frame = ellipse(frame, referee["bbox"], (0, 255, 255))
+                frame = ellipse(frame, referee["bbox"], (0, 255, 255))      # yellow ellipse
 
             for tracker_id, ball in ball_dict.items():
-                frame = triangle(frame, ball["bbox"], (0, 255, 0))
+                frame = triangle(frame, ball["bbox"], (0, 255, 0))          # green triangle
                 
+            frame = ball_possession_box(frame_num, frame, ball_possession)
+
             output_frames.append(frame)
 
         return output_frames
