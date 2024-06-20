@@ -5,7 +5,7 @@ from team_assignment import TeamAssigner
 from player_ball_assignment import PlayerBallAssigner
 
 def process_video(data: Union[str, bytes], classes: List[int]) -> None:
-    frames = read_video(data)
+    frames, fps, _, _ = read_video(data)
 
     tracker = Tracker("models/best.pt", classes)
     tracks = tracker.get_object_tracks(frames)
@@ -19,7 +19,7 @@ def process_video(data: Union[str, bytes], classes: List[int]) -> None:
     player_assigner.get_player_and_possession(tracks)
 
     output = tracker.annotations(frames, tracks, player_assigner.ball_possession)
-    save_video(output, "output/output.mp4")
+    save_video(output, "output/output.mp4", fps)
 
 if __name__ == "__main__":
     process_video("demos/demo1.mp4", [0, 1, 2, 3])
