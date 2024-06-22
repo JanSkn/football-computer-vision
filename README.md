@@ -119,8 +119,6 @@ If you have a suggestion that would make this better, please fork the repo and c
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-**Please follow the [Contributing](.github/CONTRIBUTING.md) guidelines.**
-
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
