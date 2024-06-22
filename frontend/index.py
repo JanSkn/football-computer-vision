@@ -111,11 +111,13 @@ with tab2:
         st.video("output/output.mp4")
 
 with tab3:
-    log_files = "model_logs/tracking.log"
+    log_files_list = ["logs/tracking.log", "logs/camera_movement.log"]
+
+    selected_log_file = st.selectbox("Select Log File", log_files_list)
 
     try:
-        with open(log_files, "r") as log_file:
+        with open(selected_log_file, "r") as log_file:
             log_contents = log_file.read()
-        st.text_area("Tracking logs", log_contents, height=450)
+        st.text_area("Logs", log_contents, height=450)
     except FileNotFoundError:
-        st.error(f"Log file '{log_files}' not found.")
+        st.error(f"Log file '{selected_log_file}' not found.")
