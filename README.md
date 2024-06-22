@@ -55,6 +55,8 @@ To improve the ball detection, the ball position gets interpolated with Pandas.
 
 The camera movement gets estimated with optical flow to adjust the object positions.
 
+<br />
+
 <img width="1101" alt="image" src="https://github.com/JanSkn/football-computer-vision/assets/68644413/09854bf6-39f5-4f7f-92c8-c8f438e7f7a1">
 
 
@@ -92,6 +94,11 @@ streamlit run frontend/index.py
 ```
 
 You can upload your own video or use a demo video. Everything is explained in the frontend.
+
+<br />
+
+<img width="1463" alt="image" src="https://github.com/JanSkn/football-computer-vision/assets/68644413/c5172932-b99f-4917-abfd-5a1005d20c9d">
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
