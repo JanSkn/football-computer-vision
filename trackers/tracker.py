@@ -8,12 +8,11 @@ import ultralytics
 import supervision as sv
 from utils import ellipse, triangle, ball_possession_box, get_device
 
-logging.basicConfig(level=logging.INFO, 
-                    format="%(asctime)s - %(levelname)s - %(message)s",
-                    handlers=[
-                        logging.FileHandler("model_logs/tracking.log"),
-                        logging.StreamHandler()
-                    ])
+handler = logging.FileHandler("logs/tracking.log")
+handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+logger = logging.getLogger("tracker")
+logger.setLevel(logging.INFO)
+logger.addHandler(handler)
 
 class Tracker:
     """
@@ -56,7 +55,7 @@ class Tracker:
         start_time = time.time()
 
         if self.verbose:
-            logging.info(f"[Device: {get_device()}] Starting object detection at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            logger.info(f"[Device: {get_device()}] Starting object detection at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
         for i in range(0, len(frames), batch_size):
             frame_time = time.time()
@@ -65,10 +64,10 @@ class Tracker:
             detections += detections_batch
 
             if self.verbose:
-                logging.info(f"Processed frames {i} to {min(i+batch_size-1, len(frames))} in {time.time() - frame_time:.2f} seconds.")
+                logger.info(f"Processed frames {i} to {min(i+batch_size-1, len(frames))} in {time.time() - frame_time:.2f} seconds.")
         
         if self.verbose:
-            logging.info(f"Detected objects in {len(frames)} frames in {time.time() - start_time:.2f} seconds.")
+            logger.info(f"Detected objects in {len(frames)} frames in {time.time() - start_time:.2f} seconds.")
   
         return detections
 
@@ -85,7 +84,7 @@ class Tracker:
         start_time = time.time()
 
         if self.verbose:
-            logging.info(f"[Device: {get_device()}] Starting object tracking at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            logger.info(f"[Device: {get_device()}] Starting object tracking at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
         for frame_num, detection in enumerate(detections):
             cls_names = detection.names
@@ -135,14 +134,14 @@ class Tracker:
                     tracks["ball"][frame_num][1] = {"bbox": bbox}   # ID 1 as there is only one ball
 
         if self.verbose:
-            logging.info(f"Tracked objects in {len(frames)} frames in {time.time() - start_time:.2f} seconds.")
+            logger.info(f"Tracked objects in {len(frames)} frames in {time.time() - start_time:.2f} seconds.")
 
-            separator = f"{'-'*10} [End of session] at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} {'-'*10}"
-            logging.info(separator)
+            separator = f"{'-'*10} [End of tracking] at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} {'-'*10}"
+            logger.info(separator)
 
         return tracks
 
-    def annotations(self, frames: List[np.ndarray], tracks: Dict[str, List[Dict]], ball_possession: np.ndarray) -> List[np.ndarray]:   # TODO extra folder for custom drawings and then import?
+    def draw_annotations(self, frames: List[np.ndarray], tracks: Dict[str, List[Dict]], ball_possession: np.ndarray) -> List[np.ndarray]:   # TODO extra folder for custom drawings and then import?
         output_frames = []  # frames after changing the annotations
         
         for frame_num, frame in enumerate(frames):
