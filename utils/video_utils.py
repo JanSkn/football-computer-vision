@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Union, Tuple
 import numpy as np
 import cv2
 import tempfile
@@ -22,7 +22,7 @@ def set_opencv_videoio_dll_path():
 
 #set_opencv_videoio_dll_path()
 
-def read_video(input: Union[str, bytes]) -> List[np.ndarray]:
+def read_video(input: Union[str, bytes]) -> Tuple[List[np.ndarray], int, int, str]:
     if isinstance(input, bytes):
         with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as f:
             f.write(input)
