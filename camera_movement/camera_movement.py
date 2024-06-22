@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 import cv2
 import numpy as np
 import time
@@ -38,6 +38,16 @@ class CameraMovementEstimator():
         )
 
         self.verbose = verbose
+
+    def adjust_positions_to_tracks(self, tracks: Dict[str, List[Dict]], camera_movement_per_frame: List[List[float]]) -> None:
+        for object, object_tracks in tracks.items():
+            for frame_num, track_dict in enumerate(object_tracks):
+                for tracker_id, track in track_dict.items():
+                    position = track["position"]
+                    camera_movement = camera_movement_per_frame[frame_num]
+                    position_adjusted = (position[0] - camera_movement[0], position[1] - camera_movement[1])    # x - camera_x, y - camera_y
+                    
+                    tracks[object][frame_num][tracker_id]["position_adjusted"] = position_adjusted
 
     def get_camera_movement(self, frames: List[np.ndarray]) -> List[List[float]]:
         start_time = time.time()
