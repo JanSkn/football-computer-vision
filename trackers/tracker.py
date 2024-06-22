@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import ultralytics
 import supervision as sv
-from utils import ellipse, triangle, ball_possession_box, get_device
+from utils import ellipse, triangle, ball_possession_box, get_device, get_center_of_bbox, get_foot_position
 
 handler = logging.FileHandler("logs/tracking.log")
 handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
@@ -140,6 +140,20 @@ class Tracker:
             logger.info(separator)
 
         return tracks
+    
+    def add_position_to_tracks(self, tracks: Dict[str, List[Dict]]) -> None:
+        for object, object_tracks in tracks.items():
+            for frame_num, track_dict in enumerate(object_tracks):
+                for tracker_id, track in track_dict.items():
+                    bbox = track["bbox"]
+
+                    if object == "ball":
+                        position = get_center_of_bbox(bbox)
+                    else:   # player
+                        position = get_foot_position(bbox)
+
+                    # add new key position
+                    tracks[object][frame_num][tracker_id]["position"] = position
 
     def draw_annotations(self, frames: List[np.ndarray], tracks: Dict[str, List[Dict]], ball_possession: np.ndarray) -> List[np.ndarray]:   # TODO extra folder for custom drawings and then import?
         output_frames = []  # frames after changing the annotations

@@ -10,9 +10,11 @@ def process_video(data: Union[str, bytes], classes: List[int]) -> None:
 
     tracker = Tracker("models/best.pt", classes)
     tracks = tracker.get_object_tracks(frames)
+    tracker.add_position_to_tracks(tracks)
 
     camera_movement_estimator = CameraMovementEstimator(frames[0])
     camera_movement_per_frame = camera_movement_estimator.get_camera_movement(frames)
+    camera_movement_estimator.adjust_positions_to_tracks(tracks, camera_movement_per_frame)
 
     tracks["ball"] = tracker.interpolate_ball_positions(tracks["ball"])
 
