@@ -97,6 +97,10 @@ You can upload your own video or use a demo video. Everything is explained in th
 
 <br />
 
+Or run the `main.py` file.
+
+<br />
+
 <img width="1463" alt="image" src="https://github.com/JanSkn/football-computer-vision/assets/68644413/c5172932-b99f-4917-abfd-5a1005d20c9d">
 
 
