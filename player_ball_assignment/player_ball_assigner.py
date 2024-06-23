@@ -39,7 +39,7 @@ class PlayerBallAssigner():
                 # add new key has_ball 
                 tracks["players"][frame_num][assigned_player]["has_ball"] = True
                 ball_possession.append(tracks["players"][frame_num][assigned_player]["team"])    # current team in possesion in this frame
-            else:
+            elif len(ball_possession) > 0:
                 ball_possession.append(ball_possession[-1])   # if ball not close to a player (e.g. pass played), last team in possesion
             
         # ball possession counter in ball_possession_box() requires numpy array
