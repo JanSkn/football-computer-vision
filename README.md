@@ -29,7 +29,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-The project called *MatchVision* allows tracking the ball, referees and players, tracking them individually and assigning them to a team, displaying ball possession and estimating the camera movement. 
+The project called *MatchVision* allows tracking the ball, referees and players, treating players individually by ID and assigning them to a team, displaying ball possession and estimating the camera movement. 
 
 <br />
 
@@ -51,7 +51,7 @@ The YOLO model detects the bounding boxes of the objects. They get stored in a d
 
 The team detection is based on KMeans clustering.
 
-To improve the ball detection, the ball position gets interpolated with Pandas.
+To improve the ball highlighting, the ball position gets interpolated with Pandas.
 
 The camera movement gets estimated with optical flow to adjust the object positions.
 
@@ -87,6 +87,8 @@ pip install -r requirements.txt
 <!-- USAGE EXAMPLES -->
 ## Usage
 
+>__Warning__: Run both from the root of the project.
+
 You have 2 options to run the project:
 
 <br />
@@ -107,8 +109,6 @@ python main.py --video demos/demo1.mp4 --tracks players referees stats --verbose
 <br />
 
 **2) Frontend**
-
-Go to the root directory of the project and enter
 
 ```sh
 streamlit run frontend/index.py
