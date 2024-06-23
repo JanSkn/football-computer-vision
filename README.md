@@ -101,7 +101,7 @@ Or run the `main.py` file.
 
 <br />
 
-<img width="1463" alt="image" src="https://github.com/JanSkn/football-computer-vision/assets/68644413/c5172932-b99f-4917-abfd-5a1005d20c9d">
+<img width="1465" alt="image" src="https://github.com/JanSkn/football-computer-vision/assets/68644413/477b8d43-34ae-4108-afd3-6313f9ddd706">
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
