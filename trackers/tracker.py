@@ -6,13 +6,17 @@ import numpy as np
 import pandas as pd
 import ultralytics
 import supervision as sv
-from utils import ellipse, triangle, ball_possession_box, get_device, get_center_of_bbox, get_foot_position
+from utils import ellipse, triangle, ball_possession_box, get_device, get_center_of_bbox, get_foot_position, options
 
-handler = logging.FileHandler("logs/tracking.log")
-handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+file_handler = logging.FileHandler("logs/tracking.log")
+file_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+
 logger = logging.getLogger("tracker")
 logger.setLevel(logging.INFO)
-logger.addHandler(handler)
+logger.addHandler(file_handler)
+logger.addHandler(stream_handler)
 
 class Tracker:
     """
@@ -60,7 +64,7 @@ class Tracker:
         for i in range(0, len(frames), batch_size):
             frame_time = time.time()
             
-            detections_batch = self.model.predict(source=frames[i:i+batch_size], conf=0.1, classes=self.classes, verbose=self.verbose, device=get_device())
+            detections_batch = self.model.predict(source=frames[i:i+batch_size], conf=0.1, verbose=self.verbose, device=get_device())
             detections += detections_batch
 
             if self.verbose:
@@ -165,20 +169,24 @@ class Tracker:
             referee_dict = tracks["referees"][frame_num]
             ball_dict = tracks["ball"][frame_num]
 
-            for tracker_id, player in player_dict.items():
-                colour = player.get("team_colour", (255, 255, 255))         # get team colour if it exists, else white
-                frame = ellipse(frame, player["bbox"], colour, tracker_id)
+            if options["players"] in self.classes:
+                for tracker_id, player in player_dict.items():
+                    colour = player.get("team_colour", (255, 255, 255))         # get team colour if it exists, else white 
+                    frame = ellipse(frame, player["bbox"], colour, tracker_id)
 
-                if player.get("has_ball", False):
-                    frame = triangle(frame, player["bbox"], (0, 0, 255))    # red triangle
+                    if player.get("has_ball", False):
+                        frame = triangle(frame, player["bbox"], (0, 0, 255))    # red triangle
 
-            for _, referee in referee_dict.items():
-                frame = ellipse(frame, referee["bbox"], (0, 255, 255))      # yellow ellipse
+            if options["referees"] in self.classes: 
+                for _, referee in referee_dict.items():
+                    frame = ellipse(frame, referee["bbox"], (0, 255, 255))      # yellow ellipse
 
-            for tracker_id, ball in ball_dict.items():
-                frame = triangle(frame, ball["bbox"], (0, 255, 0))          # green triangle
-                
-            frame = ball_possession_box(frame_num, frame, ball_possession)
+            if options["ball"] in self.classes: 
+                for tracker_id, ball in ball_dict.items():
+                    frame = triangle(frame, ball["bbox"], (0, 255, 0))          # green triangle
+            
+            if options["stats"] in self.classes: 
+                frame = ball_possession_box(frame_num, frame, ball_possession)
 
             output_frames.append(frame)
 

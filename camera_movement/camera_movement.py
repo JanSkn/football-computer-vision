@@ -4,16 +4,20 @@ import numpy as np
 import time
 from datetime import datetime
 import logging
-from utils import get_distance
+from utils import get_distance, options
 
-handler = logging.FileHandler("logs/camera_movement.log")
-handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+file_handler = logging.FileHandler("logs/camera_movement.log")
+file_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+
 logger = logging.getLogger("camera_movement")
 logger.setLevel(logging.INFO)
-logger.addHandler(handler)
+logger.addHandler(file_handler)
+logger.addHandler(stream_handler)
 
 class CameraMovementEstimator():
-    def __init__(self, frame: np.ndarray, verbose: bool=True) -> None:
+    def __init__(self, frame: np.ndarray, classes: List[int], verbose: bool=True) -> None:
         self.minimum_distance = 5       # minimum the camera needs to move
 
         # lucas kanade optical flow
@@ -37,6 +41,7 @@ class CameraMovementEstimator():
             mask = mask_features    # area of the image
         )
 
+        self.classes = classes
         self.verbose = verbose
 
     def adjust_positions_to_tracks(self, tracks: Dict[str, List[Dict]], camera_movement_per_frame: List[List[float]]) -> None:
@@ -95,20 +100,23 @@ class CameraMovementEstimator():
     def draw_camera_movement(self, frames: List[np.ndarray], camera_movement_per_frame: List[List[float]]) -> List[np.ndarray]:
         output_frames = []
 
-        for frame_num, frame in enumerate(frames):
-            frame = frame.copy()
+        if options["stats"] in self.classes:
+            for frame_num, frame in enumerate(frames):
+                frame = frame.copy()
 
-            overlay = frame.copy()
+                overlay = frame.copy()
 
-            cv2.rectangle(overlay, pt1=(0, 0), pt2=(500, 100), color=(255, 255, 255), thickness=cv2.FILLED)
-            alpha = 0.4
-            cv2.addWeighted(src1=overlay, alpha=alpha, src2=frame, beta=1-alpha, gamma=0, dst=frame) 
+                cv2.rectangle(overlay, pt1=(0, 0), pt2=(500, 100), color=(255, 255, 255), thickness=cv2.FILLED)
+                alpha = 0.4
+                cv2.addWeighted(src1=overlay, alpha=alpha, src2=frame, beta=1-alpha, gamma=0, dst=frame) 
 
-            x_movement, y_movement = camera_movement_per_frame[frame_num]
-   
-            frame = cv2.putText(frame, text=f"Camera Movement X: {x_movement:.2f}", org=(10, 30), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(0, 0, 0), thickness=3)
-            frame = cv2.putText(frame, text=f"Camera Movement Y: {y_movement:.2f}", org=(10, 60), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(0, 0, 0), thickness=3)
+                x_movement, y_movement = camera_movement_per_frame[frame_num]
+    
+                frame = cv2.putText(frame, text=f"Camera Movement X: {x_movement:.2f}", org=(10, 30), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(0, 0, 0), thickness=3)
+                frame = cv2.putText(frame, text=f"Camera Movement Y: {y_movement:.2f}", org=(10, 60), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(0, 0, 0), thickness=3)
 
-            output_frames.append(frame)
+                output_frames.append(frame)
+        else:
+            output_frames = frames.copy()
 
         return output_frames
