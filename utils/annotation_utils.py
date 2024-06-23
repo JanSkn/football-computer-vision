@@ -3,6 +3,11 @@ import numpy as np
 import cv2
 from . import get_center_of_bbox, get_bbox_dimensions
 
+# data.yaml class IDs
+# ball: 0, goalkeeper: 1, player: 2, referee: 3
+# additional for drawing stats: 4
+options = {"ball": 0, "goalkeepers": 1, "players": 2, "referees": 3, "stats": 4}
+
 def ellipse(frame: np.ndarray, bbox: List[float], colour: Tuple[int, int, int], tracker_id: int=None):
     # xyxy bboxes --> y2 at last index
     y2 = int(bbox[3])   # ellipse should be below the player

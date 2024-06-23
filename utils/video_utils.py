@@ -1,28 +1,24 @@
 from typing import List, Union, Tuple
 import numpy as np
 import cv2
+import time
+from datetime import datetime
+import logging
 import tempfile
-import os
-import platform
-import sys
-sys.path.append(os.path.abspath(".."))
 
-def set_opencv_videoio_dll_path():
-    system = platform.system()
-    if system == "Windows":
-        dll_path = "dll_files/openh264-1.8.0-win64.dll"
-    elif system == "Darwin":  # macOS
-        dll_path = "dll_files/openh264.dylib"
-    elif system == "Linux":
-        dll_path = "dll_files/libopenh264.so.1.8.0"
-    else:
-        raise OSError("Unsupported operating system")
+file_handler = logging.FileHandler("logs/memory_access.log")
+file_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
 
-    os.environ["OPENCV_VIDEOIO_DLL_PATH"] = dll_path
+logger = logging.getLogger("memory_access")
+logger.setLevel(logging.INFO)
+logger.addHandler(file_handler)
+logger.addHandler(stream_handler)
 
-#set_opencv_videoio_dll_path()
+def read_video(input: Union[str, bytes], verbose: bool=True) -> Tuple[List[np.ndarray], int, int, str]:
+    start_time = time.time()
 
-def read_video(input: Union[str, bytes]) -> Tuple[List[np.ndarray], int, int, str]:
     if isinstance(input, bytes):
         with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as f:
             f.write(input)
@@ -48,9 +44,14 @@ def read_video(input: Union[str, bytes]) -> Tuple[List[np.ndarray], int, int, st
 
     cap.release()
 
+    if verbose:
+            logger.info(f"Reading input video from memory in {time.time() - start_time:.2f} seconds.")
+
     return frames, fps, fourcc, codec
 
-def save_video(frames: List[np.ndarray], path: str, fps: int=24) -> None:
+def save_video(frames: List[np.ndarray], path: str, fps: int=24, verbose: bool=True) -> None:
+    start_time = time.time()
+
     fourcc = cv2.VideoWriter_fourcc(*"avc1")    # codec for compressing the video
     out = cv2.VideoWriter(filename=path, fourcc=fourcc, fps=fps, frameSize=(frames[0].shape[1], frames[0].shape[0]))
     
@@ -59,3 +60,6 @@ def save_video(frames: List[np.ndarray], path: str, fps: int=24) -> None:
     
     # close video file and release ressources
     out.release()   
+
+    if verbose:
+            logger.info(f"Saving video in {time.time() - start_time:.2f} seconds.")
