@@ -11,18 +11,19 @@ st.set_page_config(page_title="Football Analysis")
 st.sidebar.title("Settings")
 
 st.sidebar.header("Options")
-players = st.sidebar.toggle("Track Players", value=True)
-goalkeepers = st.sidebar.toggle("Track Goalkeepers", value=True)
-referees = st.sidebar.toggle("Track Referees", value=True)
-ball = st.sidebar.toggle("Track Ball", value=True)
-keypoints = st.sidebar.toggle("Show Keypoints", value=True)
-speed = st.sidebar.toggle("Show Players' Speed", value=True)
+players = st.sidebar.toggle("Highlight Players", value=True)
+goalkeepers = st.sidebar.toggle("Highlight Goalkeepers", value=True)
+referees = st.sidebar.toggle("Highlight Referees", value=True)
+ball = st.sidebar.toggle("Highlight Ball", value=True)
+stats = st.sidebar.toggle("Show Statistics", value=True)
+keypoints = st.sidebar.toggle("Show Keypoints", value=True, disabled=True, help="Feature coming soon")
+speed = st.sidebar.toggle("Show Players' Speed", value=True, disabled=True, help="Feature coming soon")
 
 # select classes to track
 
 # data.yaml class IDs
 # ball: 0, goalkeeper: 1, player: 2, referee: 3
-options = {0: ball, 1: goalkeepers, 2: players, 3: referees}
+options = {0: ball, 1: goalkeepers, 2: players, 3: referees, 4: stats}
 classes = [key for key, value in options.items() if value is True]
 
 st.sidebar.markdown("***")
@@ -111,7 +112,7 @@ with tab2:
         st.video("output/output.mp4")
 
 with tab3:
-    log_files_list = ["logs/tracking.log", "logs/camera_movement.log"]
+    log_files_list = ["logs/tracking.log", "logs/camera_movement.log", "logs/memory_access.log"]
 
     selected_log_file = st.selectbox("Select Log File", log_files_list)
 
