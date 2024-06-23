@@ -87,6 +87,27 @@ pip install -r requirements.txt
 <!-- USAGE EXAMPLES -->
 ## Usage
 
+You have 2 options to run the project:
+
+<br />
+
+**1) Command Line**
+
+| Argument | Description | Info |
+| ----------- | ----------- | ----------- |
+| video | Path to the input video | String |
+| tracks | Select what you want to highlight in the output video | Options: players, goalkeepers, referees, ball, stats |
+| verbose | Model output and logging | False if left out  |
+
+Example:
+```sh
+python main.py --video demos/demo1.mp4 --tracks players referees stats --verbose
+```
+
+<br />
+
+**2) Frontend**
+
 Go to the root directory of the project and enter
 
 ```sh
@@ -94,10 +115,6 @@ streamlit run frontend/index.py
 ```
 
 You can upload your own video or use a demo video. Everything is explained in the frontend.
-
-<br />
-
-Or run the `main.py` file.
 
 <br />
 
