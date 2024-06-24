@@ -32,7 +32,7 @@ st.sidebar.header("Video Source")
 
 st.sidebar.subheader("Demo")
 
-st.sidebar.write("Choose from 3 demo videos.")
+st.sidebar.write("Choose from 2 demo videos.")
 
 uploaded_video = None
 demo_video = None
@@ -44,8 +44,7 @@ demo = st.sidebar.toggle("Demo", value=False)
 if demo:
     videos = [
     "demos/demo1.mp4",
-    "demos/demo2.mp4",
-    "demos/demo3.mp4"
+    "demos/demo2.mp4"
     ]
 
     demo_video = st.sidebar.radio("Select Video", videos)
@@ -87,7 +86,7 @@ if uploaded_video:
         placeholder = st.empty()
         with placeholder.container():
             st.success("Video processing complete.")
-            time.sleep(3)
+            time.sleep(1)
         placeholder.empty()
 
 # main page
