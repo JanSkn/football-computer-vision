@@ -30,6 +30,7 @@ class Tracker:
         self.classes = classes
         self.tracker = sv.ByteTrack()
         self.verbose = verbose
+        self.interpolation_tracker = None   # used for ball annotation: don't draw ball in a large interpolation window
 
     def interpolate_ball_positions(self, ball_tracks: List[Dict]) -> List[Dict]:
         """
@@ -39,6 +40,9 @@ class Tracker:
         # tracker_id 1 for ball, {} if nothing found, at tracker_id 1, get bbox, [] if nothing found
         # {1: {"bbox": [....]}, ...
         ball_positions = [track.get(1, {}).get("bbox", []) for track in ball_tracks]
+
+        self.interpolation_tracker = [1 if not bbox else 0 for bbox in ball_positions]   # if no datapoint: empty list --> interpolation
+        
         df_ball_positions = pd.DataFrame(ball_positions, columns=["x1", "y1", "x2", "y2"])
 
         df_ball_positions = df_ball_positions.interpolate() # interpolate NaN values, estimation based on previous data
@@ -64,7 +68,7 @@ class Tracker:
         for i in range(0, len(frames), batch_size):
             frame_time = time.time()
             
-            detections_batch = self.model.predict(source=frames[i:i+batch_size], conf=0.1, verbose=self.verbose, device=get_device())
+            detections_batch = self.model.predict(source=frames[i:i+batch_size], conf=0.15, verbose=self.verbose, device=get_device())
             detections += detections_batch
 
             if self.verbose:
@@ -115,7 +119,7 @@ class Tracker:
             tracks["players"].append({}) 
             tracks["referees"].append({})
             tracks["ball"].append({})
-            
+
             for frame_detection in detections_with_tracks:
                 # frame_detection: Detections (bboxes), mask, confidence, class_id, tracker_id, class_name
                 bbox = frame_detection[0].tolist()
@@ -134,7 +138,7 @@ class Tracker:
                 bbox = frame_detection[0].tolist()
                 class_id = frame_detection[3]
 
-                if class_id == cls_names_switched["ball"]:
+                if class_id == cls_names_switched["ball"] and frame_detection[2] >= 0.3:    # higher confidence for ball to avoid tracking of field parts etc.
                     tracks["ball"][frame_num][1] = {"bbox": bbox}   # ID 1 as there is only one ball
 
         if self.verbose:
@@ -158,10 +162,11 @@ class Tracker:
 
                     # add new key position
                     tracks[object][frame_num][tracker_id]["position"] = position
-
+    
     def draw_annotations(self, frames: List[np.ndarray], tracks: Dict[str, List[Dict]], ball_possession: np.ndarray) -> List[np.ndarray]:   # TODO extra folder for custom drawings and then import?
         output_frames = []  # frames after changing the annotations
-        
+        num_interpolated = 0
+
         for frame_num, frame in enumerate(frames):
             frame = frame.copy()       # don't change original
 
@@ -181,9 +186,16 @@ class Tracker:
                 for _, referee in referee_dict.items():
                     frame = ellipse(frame, referee["bbox"], (0, 255, 255))      # yellow ellipse
 
-            if options["ball"] in self.classes: 
+            if options["ball"] in self.classes:
+                if self.interpolation_tracker[frame_num] == 1:
+                    num_interpolated += 1
+                else:
+                    num_interpolated = 0 
+                
                 for tracker_id, ball in ball_dict.items():
-                    frame = triangle(frame, ball["bbox"], (0, 255, 0))          # green triangle
+                    # only draw detected ball or if not too many consecutive interpolated trackings 
+                    if num_interpolated <= 25 or self.interpolation_tracker[frame_num] == 0:
+                        frame = triangle(frame, ball["bbox"], (0, 255, 0))          # green triangle
             
             if options["stats"] in self.classes: 
                 frame = ball_possession_box(frame_num, frame, ball_possession)
