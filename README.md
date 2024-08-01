@@ -57,7 +57,16 @@ The camera movement gets estimated with optical flow to adjust the object positi
 
 <br />
 
+**Input Video Example**
+
+<img width="1101" alt="image" src="https://github.com/user-attachments/assets/c922324f-f558-4d93-9833-97bfffdf4bc7">
+
+<br /><br />
+
+**Result**
+
 <img width="1101" alt="image" src="https://github.com/JanSkn/football-computer-vision/assets/68644413/09854bf6-39f5-4f7f-92c8-c8f438e7f7a1">
+
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
