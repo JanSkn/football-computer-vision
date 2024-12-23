@@ -3,7 +3,7 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/janskn/football_computer_vision">
+  <a href="https://github.com/janskn/football-computer-vision">
     <img src="https://github.com/JanSkn/football-computer-vision/assets/68644413/9ba661d9-992a-499a-89f4-946d3a99a359" alt="Logo" width="200" height="200">
   </a>
 
@@ -12,12 +12,12 @@
   <p align="center">
     Automated football match analysis using Computer Vision.
     <br />
-    <a href="https://pylearn-ml.readthedocs.io/en/latest/"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/janskn/football-computer-vision/issues"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/janskn/football_computer_vision/issues">Report Bug</a>
+    <a href="https://github.com/janskn/football-computer-vision/issues">Report Bug</a>
     ·
-    <a href="https://github.com/janskn/football_computer_vision/issues">Request Feature</a>
+    <a href="https://github.com/janskn/football-computer-vision/issues">Request Feature</a>
   </p>
 
   <br />
